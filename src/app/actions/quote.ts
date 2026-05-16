@@ -2,9 +2,14 @@
 
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM ?? 'Beyond Thesis <noreply@beyondthesis.in>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'drshorafbaylon@gmail.com'
+
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  if (!key) return null
+  return new Resend(key)
+}
 
 export async function submitQuote(formData: FormData) {
   const name = (formData.get('name') as string).trim()
@@ -17,7 +22,8 @@ export async function submitQuote(formData: FormData) {
     return { error: 'Name, email and specialty are required.' }
   }
 
-  if (!process.env.RESEND_API_KEY) {
+  const resend = getResend()
+  if (!resend) {
     console.log(`[quote] Quote request from ${name} <${email}> — ${specialty}`)
     return { success: true }
   }

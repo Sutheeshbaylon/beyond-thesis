@@ -1,12 +1,13 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM = process.env.RESEND_FROM ?? 'Beyond Thesis <noreply@beyondthesis.in>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://beyondthesis.in'
 
-// Gracefully no-op if key not configured (dev without Resend)
-function canSend() {
-  return Boolean(process.env.RESEND_API_KEY)
+// Lazy — only instantiated when key is present, so missing key never crashes on import
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  if (!key) return null
+  return new Resend(key)
 }
 
 export async function sendWelcomeEmail({
@@ -14,7 +15,8 @@ export async function sendWelcomeEmail({
 }: {
   to: string; name: string; tempPassword: string
 }) {
-  if (!canSend()) {
+  const resend = getResend()
+  if (!resend) {
     console.log(`[email] Welcome email skipped (no RESEND_API_KEY). Would send to: ${to}`)
     return
   }
@@ -52,7 +54,8 @@ export async function sendPaymentReceiptEmail({
 }: {
   to: string; name: string; paymentType: string; amount: number; utrNumber: string; projectTitle: string
 }) {
-  if (!canSend()) {
+  const resend = getResend()
+  if (!resend) {
     console.log(`[email] Payment receipt skipped (no RESEND_API_KEY). Would send to: ${to}`)
     return
   }
@@ -94,7 +97,8 @@ export async function sendDeliverableApprovedEmail({
 }: {
   to: string; name: string; chapterLabel: string; projectTitle: string
 }) {
-  if (!canSend()) {
+  const resend = getResend()
+  if (!resend) {
     console.log(`[email] Deliverable approved email skipped (no RESEND_API_KEY). Would send to: ${to}`)
     return
   }
