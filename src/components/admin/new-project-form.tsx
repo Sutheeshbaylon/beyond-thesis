@@ -31,15 +31,21 @@ export default function NewProjectForm({
   const [clientMode, setClientMode] = useState<'existing' | 'new'>('existing')
   const [tier, setTier] = useState('standard')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMsg, setErrorMsg] = useState('')
 
   const tierTotals: Record<string, number> = { standard: 16000, special: 15000, super: 12500 }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMsg('')
     const formData = new FormData(e.currentTarget)
     formData.set('client_mode', clientMode)
-    await createProject(formData)
+    const result = await createProject(formData)
+    if (result?.error) {
+      setErrorMsg(result.error)
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -186,6 +192,12 @@ export default function NewProjectForm({
           </div>
         </div>
       </section>
+
+      {errorMsg && (
+        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-[#9B1C1C]">
+          {errorMsg}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <button

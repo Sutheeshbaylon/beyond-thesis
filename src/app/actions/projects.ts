@@ -13,7 +13,7 @@ const TIER_TOTALS: Record<string, number> = {
   super: 12500,
 }
 
-export async function createProject(formData: FormData) {
+export async function createProject(formData: FormData): Promise<{ error: string } | void> {
   await requireRole('admin')
   const supabase = await createClient()
   const adminClient = createAdminClient()
@@ -27,18 +27,16 @@ export async function createProject(formData: FormData) {
     const phone = formData.get('client_phone') as string
     const tempPassword = Math.random().toString(36).slice(-10) + 'Bt1!'
 
-    // Create auth user
     const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
     })
 
-    if (authError) throw new Error(authError.message)
+    if (authError) return { error: `Failed to create login account: ${authError.message}` }
     clientId = authUser.user.id
 
-    // Insert into public.users
-    const { error: profileError } = await supabase.from('users').insert({
+    const { error: profileError } = await adminClient.from('users').insert({
       id: clientId,
       full_name: fullName,
       email,
@@ -47,10 +45,11 @@ export async function createProject(formData: FormData) {
       is_active: true,
     })
 
-    if (profileError) throw new Error(profileError.message)
+    if (profileError) return { error: `Failed to save client profile: ${profileError.message}` }
     await sendWelcomeEmail({ to: email, name: fullName, tempPassword })
   } else {
     clientId = formData.get('client_id') as string
+    if (!clientId) return { error: 'Please select a client.' }
   }
 
   const tier = formData.get('tier') as string
@@ -79,9 +78,8 @@ export async function createProject(formData: FormData) {
     .select('id')
     .single()
 
-  if (projectError || !project) throw new Error(projectError?.message ?? 'Failed to create project.')
+  if (projectError || !project) return { error: projectError?.message ?? 'Failed to create project.' }
 
-  // Assign writer + stats if provided
   const writerId = formData.get('writer_id') as string
   const statsId = formData.get('stats_id') as string
   const assignments = []
