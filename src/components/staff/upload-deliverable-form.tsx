@@ -57,15 +57,15 @@ export default function UploadDeliverableForm({
     formData.set('file', file)
 
     startTransition(async () => {
-      try {
-        await uploadStaffDeliverable(formData, role)
-        setSuccess(true)
-        setChapter('')
-        setFile(null)
-        setTimeout(() => { setSuccess(false); setOpen(false) }, 1500)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Upload failed.')
+      const result = await uploadStaffDeliverable(formData, role)
+      if (result?.error) {
+        setError(result.error)
+        return
       }
+      setSuccess(true)
+      setChapter('')
+      setFile(null)
+      setTimeout(() => { setSuccess(false); setOpen(false) }, 1500)
     })
   }
 
