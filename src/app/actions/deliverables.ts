@@ -126,7 +126,7 @@ export async function advanceStage(projectId: string, currentStage: number) {
 }
 
 export async function deleteDeliverable(deliverableId: string, projectId: string) {
-  const { user, role } = await requireRole('admin', 'writer', 'stats')
+  const { user, profile } = await requireRole('admin', 'writer', 'stats')
   const supabase = await createClient()
 
   const { data: deliverable } = await supabase
@@ -137,7 +137,7 @@ export async function deleteDeliverable(deliverableId: string, projectId: string
 
   if (!deliverable) throw new Error('Deliverable not found.')
 
-  if (role !== 'admin') {
+  if (profile.role !== 'admin') {
     if (deliverable.uploader_id !== user.id) throw new Error('You can only delete your own files.')
     if (!['draft', 'revision_requested'].includes(deliverable.status)) {
       throw new Error('You can only delete files in Draft or Revision requested status.')
