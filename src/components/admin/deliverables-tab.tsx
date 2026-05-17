@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { approveDeliverable, sendBackDeliverable, deleteDeliverable } from '@/app/actions/deliverables'
+import { approveDeliverable, sendBackDeliverable, deleteDeliverable, advanceStage } from '@/app/actions/deliverables'
 
 type Deliverable = {
   id: string
@@ -179,6 +179,33 @@ function DeliverableRow({ d, projectId }: { d: Deliverable; projectId: string })
   )
 }
 
+function AdvanceStageButton({ projectId, currentStage }: { projectId: string; currentStage: number }) {
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  return (
+    <div className="flex items-center gap-3 flex-wrap">
+      {error && <span className="text-xs text-[#9B1C1C]">{error}</span>}
+      <button
+        onClick={() => {
+          setError(null)
+          startTransition(async () => {
+            try {
+              await advanceStage(projectId, currentStage)
+            } catch (e) {
+              setError(e instanceof Error ? e.message : 'Failed to advance stage.')
+            }
+          })
+        }}
+        disabled={isPending}
+        className="text-sm px-4 py-2 bg-[#1A3A5C] hover:bg-[#16324f] text-white rounded-md transition-colors disabled:opacity-50"
+      >
+        {isPending ? 'Advancing…' : `Advance to Stage ${currentStage + 1}`}
+      </button>
+    </div>
+  )
+}
+
 export default function DeliverablesTab({
   deliverables,
   projectId,
@@ -201,11 +228,18 @@ export default function DeliverablesTab({
       )}
       {stages.map((stage) => {
         const stageDels = deliverables.filter((d) => d.stage === stage)
+        const allApproved = stageDels.length > 0 && stageDels.every((d) => d.status === 'approved')
+        const isCurrentStage = stage === currentStage
+        const canAdvance = isCurrentStage && allApproved && currentStage < 3
+
         return (
           <div key={stage}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-[#1A1A1A]">Stage {stage}</h3>
-              <span className="text-xs text-[#666666]">{stageDels.length} file{stageDels.length !== 1 ? 's' : ''}</span>
+              <div className="flex items-center gap-3">
+                {canAdvance && <AdvanceStageButton projectId={projectId} currentStage={currentStage} />}
+                <span className="text-xs text-[#666666]">{stageDels.length} file{stageDels.length !== 1 ? 's' : ''}</span>
+              </div>
             </div>
             <div className="bg-[#F8F8F7] border border-[#E5E5E5] rounded-lg px-4">
               {stageDels.length === 0 ? (
