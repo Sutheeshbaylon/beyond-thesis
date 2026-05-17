@@ -186,9 +186,9 @@ export default async function ClientPage() {
                     </span>
                   </div>
 
-                  {isStage3BalanceLocked && stageDels.some((d) => d.chapter === 'final_draft') && (
+                  {isStage3BalanceLocked && stageDels.length > 0 && (
                     <div className="mb-3 text-xs text-[#B07000] bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      Final thesis will unlock after balance payment is verified.
+                      Stage 3 files are locked until balance payment is verified.
                     </div>
                   )}
 
@@ -199,7 +199,7 @@ export default async function ClientPage() {
                   ) : (
                     <ul className="space-y-2">
                       {stageDels.map((d) => {
-                        const isFinalLocked = d.chapter === 'final_draft' && !isBalancePaid
+                        const isFinalLocked = d.stage === 3 && !isBalancePaid
                         return (
                           <li key={d.id} className="flex items-center justify-between gap-3">
                             <span className="text-sm text-[#1A1A1A] truncate">
