@@ -43,8 +43,19 @@ SENTRY_PROJECT=beyond-thesis
 - [x] `error.tsx` boundaries — admin, client, writer, stats routes
 - [x] Mobile responsiveness pass — `px-4 sm:px-6` on all layouts/pages; 3-col grids tightened for narrow screens
 
-## Next: Phase 7 — QA + Deployment (Days 21–28)
+## Phase 7 — QA + Deployment (in progress)
 
-- [ ] Run 16-point acceptance criteria (PRD Section 13)
-- [ ] Security pen-test (PRD Section 7)
-- [ ] Domain + DNS + Netlify deployment
+### Done (automated)
+- [x] Security code audit — 5/5 checks pass (service role isolation, requireRole coverage, env leaks, 'use server' directives, no direct DB in client components)
+- [x] `netlify.toml` — build config + security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- [x] Git committed — 73 files, clean history
+
+### Needs your hands (manual steps — see below)
+- [ ] Run 16-point acceptance criteria (PRD Section 13) — test checklist below
+- [ ] Push to GitHub → connect to Netlify
+- [ ] Set env vars in Netlify dashboard
+- [ ] Buy domain `beyondthesis.in` on GoDaddy
+- [ ] Set up Cloudflare (free) — add domain, DNS, Email Routing
+- [ ] Point GoDaddy nameservers to Cloudflare
+- [ ] Add custom domain in Netlify + SSL auto-provision
+- [ ] Soft launch with 5 trusted clients

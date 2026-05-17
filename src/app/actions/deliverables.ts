@@ -125,6 +125,51 @@ export async function advanceStage(projectId: string, currentStage: number) {
   revalidatePath(`/admin/projects/${projectId}`)
 }
 
+export async function deleteDeliverable(deliverableId: string, projectId: string) {
+  const { user, role } = await requireRole('admin', 'writer', 'stats')
+  const supabase = await createClient()
+
+  const { data: deliverable } = await supabase
+    .from('deliverables')
+    .select('chapter, filename, file_url, status, uploader_id')
+    .eq('id', deliverableId)
+    .single()
+
+  if (!deliverable) throw new Error('Deliverable not found.')
+
+  if (role !== 'admin') {
+    if (deliverable.uploader_id !== user.id) throw new Error('You can only delete your own files.')
+    if (!['draft', 'revision_requested'].includes(deliverable.status)) {
+      throw new Error('You can only delete files in Draft or Revision requested status.')
+    }
+  }
+
+  const { error: storageError } = await supabase.storage
+    .from('thesis-files')
+    .remove([deliverable.file_url])
+
+  if (storageError) throw new Error(storageError.message)
+
+  const { error: dbError } = await supabase
+    .from('deliverables')
+    .delete()
+    .eq('id', deliverableId)
+
+  if (dbError) throw new Error(dbError.message)
+
+  await writeAuditLog({
+    userId: user.id,
+    action: `Deleted deliverable: ${deliverable.filename}`,
+    entityType: 'deliverable',
+    entityId: deliverableId,
+    details: { projectId },
+  })
+
+  revalidatePath(`/admin/projects/${projectId}`)
+  revalidatePath(`/writer/projects/${projectId}`)
+  revalidatePath(`/stats/projects/${projectId}`)
+}
+
 export async function uploadDeliverable(formData: FormData) {
   const { user } = await requireRole('admin', 'writer', 'stats')
   const supabase = await createClient()
@@ -165,15 +210,13 @@ export async function uploadDeliverable(formData: FormData) {
 
   if (uploadError) throw new Error(uploadError.message)
 
-  const { data: urlData } = supabase.storage.from('thesis-files').getPublicUrl(path)
-
   const { error: dbError } = await supabase.from('deliverables').insert({
     project_id: projectId,
     uploader_id: user.id,
     stage,
     chapter,
     filename,
-    file_url: urlData.publicUrl,
+    file_url: path,
     version,
     status: 'draft',
   })

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { approveDeliverable, sendBackDeliverable } from '@/app/actions/deliverables'
+import { approveDeliverable, sendBackDeliverable, deleteDeliverable } from '@/app/actions/deliverables'
 
 type Deliverable = {
   id: string
@@ -52,6 +52,7 @@ function DeliverableRow({ d, projectId }: { d: Deliverable; projectId: string })
   const [isPending, startTransition] = useTransition()
   const [showSendBack, setShowSendBack] = useState(false)
   const [notes, setNotes] = useState(d.admin_notes ?? '')
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   function handleApprove() {
     startTransition(async () => {
@@ -96,7 +97,7 @@ function DeliverableRow({ d, projectId }: { d: Deliverable; projectId: string })
           >
             View
           </a>
-          {d.status === 'submitted_for_review' && (
+          {d.status === 'submitted_for_review' && !confirmDelete && (
             <>
               <button
                 onClick={handleApprove}
@@ -111,6 +112,37 @@ function DeliverableRow({ d, projectId }: { d: Deliverable; projectId: string })
                 className="text-xs px-3 py-1.5 border border-[#E5E5E5] text-[#1A1A1A] hover:bg-[#F8F8F7] rounded transition-colors disabled:opacity-50"
               >
                 Send back
+              </button>
+            </>
+          )}
+          {!confirmDelete && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              disabled={isPending}
+              className="text-xs px-3 py-1.5 border border-[#E5E5E5] text-[#9B1C1C] hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+            >
+              Delete
+            </button>
+          )}
+          {confirmDelete && (
+            <>
+              <span className="text-xs text-[#9B1C1C]">Delete?</span>
+              <button
+                onClick={() => startTransition(async () => {
+                  await deleteDeliverable(d.id, projectId)
+                  setConfirmDelete(false)
+                })}
+                disabled={isPending}
+                className="text-xs px-3 py-1.5 bg-[#9B1C1C] hover:bg-[#7f1717] text-white rounded transition-colors disabled:opacity-50"
+              >
+                {isPending ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={isPending}
+                className="text-xs px-3 py-1.5 border border-[#E5E5E5] text-[#666666] hover:bg-[#F8F8F7] rounded transition-colors disabled:opacity-50"
+              >
+                Cancel
               </button>
             </>
           )}

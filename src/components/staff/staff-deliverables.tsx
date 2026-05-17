@@ -1,7 +1,8 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { submitForReview } from '@/app/actions/staff'
+import { deleteDeliverable } from '@/app/actions/deliverables'
 import UploadDeliverableForm from './upload-deliverable-form'
 
 type Deliverable = {
@@ -45,6 +46,9 @@ function DeliverableRow({
   d: Deliverable; projectId: string; role: 'writer' | 'stats'
 }) {
   const [isPending, startTransition] = useTransition()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
+  const canDelete = d.status === 'draft' || d.status === 'revision_requested'
 
   return (
     <div className="py-3 border-b border-[#E5E5E5] last:border-0">
@@ -73,7 +77,38 @@ function DeliverableRow({
             className="text-xs text-[#1A3A5C] hover:underline">
             View
           </a>
-          {(d.status === 'draft' || d.status === 'revision_requested') && (
+          {canDelete && !confirmDelete && (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              disabled={isPending}
+              className="text-xs px-3 py-1.5 border border-[#E5E5E5] text-[#9B1C1C] hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+            >
+              Delete
+            </button>
+          )}
+          {canDelete && confirmDelete && (
+            <>
+              <span className="text-xs text-[#9B1C1C]">Delete?</span>
+              <button
+                onClick={() => startTransition(async () => {
+                  await deleteDeliverable(d.id, projectId)
+                  setConfirmDelete(false)
+                })}
+                disabled={isPending}
+                className="text-xs px-3 py-1.5 bg-[#9B1C1C] hover:bg-[#7f1717] text-white rounded transition-colors disabled:opacity-50"
+              >
+                {isPending ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={isPending}
+                className="text-xs px-3 py-1.5 border border-[#E5E5E5] text-[#666666] hover:bg-[#F8F8F7] rounded transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </>
+          )}
+          {(d.status === 'draft' || d.status === 'revision_requested') && !confirmDelete && (
             <button
               onClick={() => startTransition(async () => {
                 await submitForReview(d.id, projectId, role)
