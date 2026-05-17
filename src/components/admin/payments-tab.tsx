@@ -48,7 +48,7 @@ function PaymentRow({ p, projectId }: { p: Payment; projectId: string }) {
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {p.screenshot_url && (
-            <a href={p.screenshot_url} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1A3A5C] hover:underline">
+            <a href={`/api/download?path=${encodeURIComponent(p.screenshot_url)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-[#1A3A5C] hover:underline">
               Screenshot
             </a>
           )}

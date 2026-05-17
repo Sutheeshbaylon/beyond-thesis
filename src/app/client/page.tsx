@@ -212,8 +212,9 @@ export default async function ClientPage() {
                               <span className="text-xs text-[#666666] whitespace-nowrap">🔒 Locked</span>
                             ) : (
                               <a
-                                href={d.file_url}
-                                download={d.filename}
+                                href={`/api/download?path=${encodeURIComponent(d.file_url)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-xs px-3 py-1 bg-[#1A3A5C] text-white rounded hover:bg-[#16324f] transition-colors whitespace-nowrap"
                               >
                                 Download

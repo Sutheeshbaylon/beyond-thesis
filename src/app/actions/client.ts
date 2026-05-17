@@ -31,15 +31,13 @@ export async function submitPayment(formData: FormData) {
 
   if (uploadError) throw new Error(uploadError.message)
 
-  const { data: urlData } = supabase.storage.from('thesis-files').getPublicUrl(path)
-
   const { error } = await supabase.from('payments').insert({
     project_id: projectId,
     submitted_by: user.id,
     amount,
     payment_type: paymentType,
     utr_number: utr,
-    screenshot_url: urlData.publicUrl,
+    screenshot_url: path,
     status: 'submitted',
   })
 

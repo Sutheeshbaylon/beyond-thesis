@@ -69,7 +69,7 @@ function DeliverableRow({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <a href={d.file_url} target="_blank" rel="noopener noreferrer"
+          <a href={`/api/download?path=${encodeURIComponent(d.file_url)}`} target="_blank" rel="noopener noreferrer"
             className="text-xs text-[#1A3A5C] hover:underline">
             View
           </a>

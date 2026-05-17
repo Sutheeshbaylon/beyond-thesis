@@ -66,15 +66,13 @@ export async function uploadStaffDeliverable(formData: FormData, role: 'writer' 
 
   if (uploadError) throw new Error(uploadError.message)
 
-  const { data: urlData } = supabase.storage.from('thesis-files').getPublicUrl(path)
-
   const { error: dbError } = await supabase.from('deliverables').insert({
     project_id: projectId,
     uploader_id: user.id,
     stage,
     chapter,
     filename,
-    file_url: urlData.publicUrl,
+    file_url: path,
     version,
     status: 'draft',
   })
