@@ -24,6 +24,8 @@ export default async function AdminPage() {
     { data: projects },
     { data: pendingDeliverables },
     { data: pendingPayments },
+    { count: openCorrections },
+    { count: newQuotes },
   ] = await Promise.all([
     supabase
       .from('projects')
@@ -37,6 +39,14 @@ export default async function AdminPage() {
       .from('payments')
       .select('project_id')
       .eq('status', 'submitted'),
+    supabase
+      .from('correction_requests')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['open', 'in_progress']),
+    supabase
+      .from('quote_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'new'),
   ])
 
   const paymentsToVerify = pendingPayments?.length ?? 0
@@ -52,7 +62,7 @@ export default async function AdminPage() {
   return (
     <main className="max-w-[1200px] mx-auto px-4 sm:px-6 py-8">
       {/* Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
         <MetricCard label="Active projects" value={activeProjects.length} />
         <MetricCard
           label="Pending approval"
@@ -64,10 +74,22 @@ export default async function AdminPage() {
           label="Outstanding balance"
           value={'₹' + outstandingBalance.toLocaleString('en-IN')}
         />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         <MetricCard
           label="Payments to verify"
           value={paymentsToVerify}
           href={paymentsToVerify > 0 ? '/admin?payment=pending' : undefined}
+        />
+        <MetricCard
+          label="Open corrections"
+          value={openCorrections ?? 0}
+          href={openCorrections ? '/admin/corrections' : undefined}
+        />
+        <MetricCard
+          label="New quote requests"
+          value={newQuotes ?? 0}
+          href={newQuotes ? '/admin/quotes' : undefined}
         />
       </div>
 

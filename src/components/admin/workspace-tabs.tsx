@@ -1,8 +1,11 @@
 'use client'
 
+import { useState, useTransition } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import DeliverablesTab from './deliverables-tab'
 import PaymentsTab from './payments-tab'
+import CorrectionCard from './correction-card'
+import { sendMessage } from '@/app/actions/messages'
 
 type CorrectionWithAttachments = {
   id: string
@@ -10,16 +13,10 @@ type CorrectionWithAttachments = {
   category: string
   body: string
   status: string
+  admin_reply?: string | null
   created_at: string
   raised_by_user: { full_name: string } | null
   correction_attachments: { id: string; file_url: string; filename: string }[]
-}
-
-type Message = {
-  id: string
-  body: string
-  created_at: string
-  sender: { full_name: string } | null
 }
 
 type AuditEntry = {
@@ -27,20 +24,6 @@ type AuditEntry = {
   action: string
   entity_type: string
   created_at: string
-}
-
-const CORRECTION_CATEGORY_STYLES: Record<string, string> = {
-  done: 'bg-green-50 text-[#1F7A3D] border border-green-200',
-  not_done: 'bg-red-50 text-[#9B1C1C] border border-red-200',
-  doubts: 'bg-amber-50 text-[#B07000] border border-amber-200',
-  dataset_changes: 'bg-[#F8F8F7] text-[#666666] border border-[#E5E5E5]',
-}
-
-const CORRECTION_STATUS_STYLES: Record<string, string> = {
-  open: 'text-[#B07000]',
-  in_progress: 'text-[#1A3A5C]',
-  resolved: 'text-[#1F7A3D]',
-  declined: 'text-[#9B1C1C]',
 }
 
 export default function WorkspaceTabs({
@@ -109,33 +92,7 @@ export default function WorkspaceTabs({
             <p className="text-sm text-[#666666] py-4">No corrections raised yet.</p>
           ) : (
             corrections.map((c) => (
-              <div key={c.id} className="bg-white border border-[#E5E5E5] rounded-lg p-4">
-                <div className="flex flex-wrap items-start gap-2 justify-between mb-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-[#1A1A1A]">{c.title}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded ${CORRECTION_CATEGORY_STYLES[c.category]}`}>
-                      {c.category.replace('_', ' ').toUpperCase()}
-                    </span>
-                  </div>
-                  <span className={`text-xs ${CORRECTION_STATUS_STYLES[c.status]}`}>
-                    {c.status.replace('_', ' ')}
-                  </span>
-                </div>
-                <p className="text-sm text-[#666666] leading-relaxed">{c.body}</p>
-                {c.correction_attachments.length > 0 && (
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {c.correction_attachments.map((a) => (
-                      <a key={a.id} href={a.file_url} target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-[#1A3A5C] hover:underline border border-[#E5E5E5] px-2 py-1 rounded">
-                        {a.filename}
-                      </a>
-                    ))}
-                  </div>
-                )}
-                <div className="text-xs text-[#666666] mt-2">
-                  {c.raised_by_user?.full_name} · {new Date(c.created_at).toLocaleDateString('en-IN')}
-                </div>
-              </div>
+              <CorrectionCard key={c.id} c={c} projectId={projectId} />
             ))
           )}
         </div>
@@ -152,22 +109,7 @@ export default function WorkspaceTabs({
       </TabsContent>
 
       <TabsContent value="messages">
-        <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 space-y-3 max-h-[500px] overflow-y-auto">
-          {messages.length === 0 ? (
-            <p className="text-sm text-[#666666]">No messages yet.</p>
-          ) : (
-            messages.map((m) => (
-              <div key={m.id}>
-                <div className="text-xs text-[#666666] mb-0.5">
-                  {m.sender?.full_name} · {new Date(m.created_at).toLocaleString('en-IN')}
-                </div>
-                <div className="text-sm text-[#1A1A1A] bg-[#F8F8F7] rounded-lg px-3 py-2">
-                  {m.body}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <MessagePanel messages={messages} projectId={projectId} />
       </TabsContent>
 
       <TabsContent value="activity">
@@ -187,5 +129,60 @@ export default function WorkspaceTabs({
         </div>
       </TabsContent>
     </Tabs>
+  )
+}
+
+type Message = { id: string; body: string; created_at: string; sender: { full_name: string } | null }
+
+function MessagePanel({ messages, projectId }: { messages: Message[]; projectId: string }) {
+  const [body, setBody] = useState('')
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState('')
+
+  function handleSend() {
+    setError('')
+    startTransition(async () => {
+      const result = await sendMessage(projectId, body)
+      if (result?.error) { setError(result.error); return }
+      setBody('')
+    })
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-white border border-[#E5E5E5] rounded-lg p-4 space-y-3 max-h-[400px] overflow-y-auto">
+        {messages.length === 0 ? (
+          <p className="text-sm text-[#666666]">No messages yet.</p>
+        ) : (
+          messages.map((m) => (
+            <div key={m.id}>
+              <div className="text-xs text-[#666666] mb-0.5">
+                {m.sender?.full_name} · {new Date(m.created_at).toLocaleString('en-IN')}
+              </div>
+              <div className="text-sm text-[#1A1A1A] bg-[#F8F8F7] rounded-lg px-3 py-2 leading-relaxed">
+                {m.body}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      <div className="space-y-2">
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Send a message to the client…"
+          rows={2}
+          className="w-full px-3 py-2 border border-[#E5E5E5] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#1A3A5C]"
+        />
+        {error && <p className="text-xs text-[#9B1C1C]">{error}</p>}
+        <button
+          onClick={handleSend}
+          disabled={isPending || !body.trim()}
+          className="text-xs px-4 py-2 bg-[#1A3A5C] hover:bg-[#16324f] text-white rounded-md transition-colors disabled:opacity-50"
+        >
+          {isPending ? 'Sending…' : 'Send message'}
+        </button>
+      </div>
+    </div>
   )
 }

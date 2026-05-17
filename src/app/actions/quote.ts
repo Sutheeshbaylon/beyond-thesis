@@ -1,6 +1,7 @@
 'use server'
 
 import { Resend } from 'resend'
+import { createClient } from '@/lib/supabase/server'
 
 const FROM = process.env.RESEND_FROM ?? 'Beyond Thesis <noreply@beyondthesis.in>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? 'drshorafbaylon@gmail.com'
@@ -20,6 +21,14 @@ export async function submitQuote(formData: FormData) {
 
   if (!name || !email || !specialty) {
     return { error: 'Name, email and specialty are required.' }
+  }
+
+  // Save to database (ignore errors — don't block the user)
+  try {
+    const supabase = await createClient()
+    await supabase.from('quote_requests').insert({ name, email, phone, specialty, message })
+  } catch {
+    // non-blocking
   }
 
   const resend = getResend()

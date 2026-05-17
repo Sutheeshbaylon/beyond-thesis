@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import PayNowModal from '@/components/client/pay-now-modal'
 import RaiseCorrectionModal from '@/components/client/raise-correction-modal'
 import CollapsibleDetails from '@/components/client/collapsible-details'
+import ClientMessagePanel from '@/components/client/client-message-panel'
 
 const CHAPTER_LABELS: Record<string, string> = {
   master_dataset: 'Master Dataset', tables: 'Tables', charts: 'Charts',
@@ -342,25 +343,7 @@ export default async function ClientPage() {
         {/* ── Messages ─────────────────────────────────────────── */}
         <div className="bg-white border border-[#E5E5E5] rounded-xl p-5">
           <h2 className="text-sm font-semibold text-[#1A1A1A] mb-4">Messages</h2>
-          {(!messages || messages.length === 0) ? (
-            <p className="text-sm text-[#666666]">No messages yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {messages.map((m) => {
-                const sender = Array.isArray(m.sender) ? m.sender[0] : m.sender as { full_name: string } | null
-                return (
-                  <div key={m.id}>
-                    <div className="text-xs text-[#666666] mb-0.5">
-                      {sender?.full_name} · {new Date(m.created_at).toLocaleString('en-IN')}
-                    </div>
-                    <div className="text-sm text-[#1A1A1A] bg-[#F8F8F7] rounded-lg px-3 py-2 leading-relaxed">
-                      {m.body}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+          <ClientMessagePanel messages={messages ?? []} projectId={project.id} />
         </div>
 
         {/* ── Project details (collapsible) ─────────────────────── */}

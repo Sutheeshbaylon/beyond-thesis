@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { approveDeliverable, sendBackDeliverable, deleteDeliverable, advanceStage } from '@/app/actions/deliverables'
+import AdminUploadForm from './admin-upload-form'
 
 type Deliverable = {
   id: string
@@ -221,6 +222,9 @@ export default function DeliverablesTab({
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <AdminUploadForm projectId={projectId} />
+      </div>
       {!isBalancePaid && currentStage === 3 && (
         <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-[#B07000]">
           Balance payment not yet verified. Stage 3 final draft will be locked for the client until balance is paid.
