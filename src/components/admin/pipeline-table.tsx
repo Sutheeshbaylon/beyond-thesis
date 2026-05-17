@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 type Project = {
   id: string
@@ -48,8 +48,11 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-export default function PipelineTable({ projects }: { projects: Project[] }) {
+export default function PipelineTable({ projects, pendingPaymentProjectIds = [] }: { projects: Project[], pendingPaymentProjectIds?: string[] }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const paymentPending = searchParams.get('payment') === 'pending'
+
   const [search, setSearch] = useState('')
   const [filterStage, setFilterStage] = useState('all')
   const [filterTier, setFilterTier] = useState('all')
@@ -60,6 +63,9 @@ export default function PipelineTable({ projects }: { projects: Project[] }) {
   const filtered = useMemo(() => {
     let rows = projects
 
+    if (paymentPending && pendingPaymentProjectIds.length > 0) {
+      rows = rows.filter((p) => pendingPaymentProjectIds.includes(p.id))
+    }
     if (search.trim()) {
       const q = search.toLowerCase()
       rows = rows.filter(
@@ -89,6 +95,14 @@ export default function PipelineTable({ projects }: { projects: Project[] }) {
 
   return (
     <div>
+      {/* Payment pending banner */}
+      {paymentPending && (
+        <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-[#B07000]">
+          <span>Showing {pendingPaymentProjectIds.length} project{pendingPaymentProjectIds.length !== 1 ? 's' : ''} with payments awaiting verification</span>
+          <button onClick={() => router.push('/admin')} className="text-xs underline ml-4 whitespace-nowrap">Clear filter</button>
+        </div>
+      )}
+
       {/* Search + Filters */}
       <div className="flex flex-wrap gap-2 mb-4">
         <input

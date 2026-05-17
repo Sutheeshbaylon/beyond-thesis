@@ -3,14 +3,17 @@ import { requireRole } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import PipelineTable from '@/components/admin/pipeline-table'
 
-function MetricCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
-  return (
-    <div className="bg-white border border-[#E5E5E5] rounded-lg px-5 py-4">
+function MetricCard({ label, value, sub, href }: { label: string; value: string | number; sub?: string; href?: string }) {
+  const inner = (
+    <div className={`bg-white border border-[#E5E5E5] rounded-lg px-5 py-4 ${href ? 'hover:border-[#1A3A5C] transition-colors' : ''}`}>
       <div className="text-2xl font-semibold text-[#1A1A1A]">{value}</div>
       <div className="text-sm text-[#666666] mt-0.5">{label}</div>
       {sub && <div className="text-xs text-[#666666] mt-1">{sub}</div>}
+      {href && <div className="text-xs text-[#1A3A5C] mt-1">Click to view →</div>}
     </div>
   )
+  if (href) return <Link href={href}>{inner}</Link>
+  return inner
 }
 
 export default async function AdminPage() {
@@ -20,7 +23,7 @@ export default async function AdminPage() {
   const [
     { data: projects },
     { count: pendingCount },
-    { count: paymentsToVerify },
+    { data: pendingPayments },
   ] = await Promise.all([
     supabase
       .from('projects')
@@ -32,9 +35,12 @@ export default async function AdminPage() {
       .eq('status', 'submitted_for_review'),
     supabase
       .from('payments')
-      .select('id', { count: 'exact', head: true })
+      .select('project_id')
       .eq('status', 'submitted'),
   ])
+
+  const paymentsToVerify = pendingPayments?.length ?? 0
+  const pendingPaymentProjectIds = [...new Set((pendingPayments ?? []).map((p) => p.project_id))]
 
   const activeProjects = projects?.filter((p) => p.stage_status === 'in_progress') ?? []
   const outstandingBalance = projects
@@ -51,7 +57,11 @@ export default async function AdminPage() {
           label="Outstanding balance"
           value={'₹' + outstandingBalance.toLocaleString('en-IN')}
         />
-        <MetricCard label="Payments to verify" value={paymentsToVerify ?? 0} />
+        <MetricCard
+          label="Payments to verify"
+          value={paymentsToVerify}
+          href={paymentsToVerify > 0 ? '/admin?payment=pending' : undefined}
+        />
       </div>
 
       {/* Pipeline header */}
@@ -65,7 +75,7 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      <PipelineTable projects={projects ?? []} />
+      <PipelineTable projects={projects ?? []} pendingPaymentProjectIds={pendingPaymentProjectIds} />
     </main>
   )
 }
