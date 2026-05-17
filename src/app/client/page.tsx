@@ -63,7 +63,7 @@ export default async function ClientPage() {
         .order('created_at'),
       supabase
         .from('correction_requests')
-        .select('id, title, category, body, status, created_at, correction_attachments(*)')
+        .select('id, title, category, body, status, admin_reply, created_at, correction_attachments(*)')
         .eq('project_id', project.id)
         .order('created_at', { ascending: false }),
       supabase
@@ -321,6 +321,12 @@ export default async function ClientPage() {
                     <span className="text-xs text-[#666666] whitespace-nowrap">{c.status}</span>
                   </div>
                   <p className="text-sm text-[#666666] leading-relaxed">{c.body}</p>
+                  {c.admin_reply && (
+                    <div className="mt-3 px-3 py-2 bg-[#F8F8F7] border border-[#E5E5E5] rounded-lg">
+                      <p className="text-xs font-medium text-[#1A3A5C] mb-1">Reply from team</p>
+                      <p className="text-sm text-[#1A1A1A]">{c.admin_reply}</p>
+                    </div>
+                  )}
                   {Array.isArray(c.correction_attachments) && c.correction_attachments.length > 0 && (
                     <div className="flex gap-2 mt-2 flex-wrap">
                       {c.correction_attachments.map((a: { id: string; file_url: string; filename: string }) => (
