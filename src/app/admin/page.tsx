@@ -22,7 +22,7 @@ export default async function AdminPage() {
 
   const [
     { data: projects },
-    { count: pendingCount },
+    { data: pendingDeliverables },
     { data: pendingPayments },
   ] = await Promise.all([
     supabase
@@ -31,7 +31,7 @@ export default async function AdminPage() {
       .order('updated_at', { ascending: false }),
     supabase
       .from('deliverables')
-      .select('id', { count: 'exact', head: true })
+      .select('project_id')
       .eq('status', 'submitted_for_review'),
     supabase
       .from('payments')
@@ -41,6 +41,8 @@ export default async function AdminPage() {
 
   const paymentsToVerify = pendingPayments?.length ?? 0
   const pendingPaymentProjectIds = [...new Set((pendingPayments ?? []).map((p) => p.project_id))]
+  const pendingDeliverableProjectIds = [...new Set((pendingDeliverables ?? []).map((d) => d.project_id))]
+  const pendingDeliverableCount = pendingDeliverables?.length ?? 0
 
   const activeProjects = projects?.filter((p) => p.stage_status === 'in_progress') ?? []
   const outstandingBalance = projects
@@ -52,7 +54,12 @@ export default async function AdminPage() {
       {/* Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <MetricCard label="Active projects" value={activeProjects.length} />
-        <MetricCard label="Pending approval" value={pendingCount ?? 0} sub="deliverables" />
+        <MetricCard
+          label="Pending approval"
+          value={pendingDeliverableCount}
+          sub="deliverables"
+          href={pendingDeliverableCount > 0 ? '/admin?deliverable=pending' : undefined}
+        />
         <MetricCard
           label="Outstanding balance"
           value={'₹' + outstandingBalance.toLocaleString('en-IN')}
@@ -75,7 +82,7 @@ export default async function AdminPage() {
         </Link>
       </div>
 
-      <PipelineTable projects={projects ?? []} pendingPaymentProjectIds={pendingPaymentProjectIds} />
+      <PipelineTable projects={projects ?? []} pendingPaymentProjectIds={pendingPaymentProjectIds} pendingDeliverableProjectIds={pendingDeliverableProjectIds} />
     </main>
   )
 }

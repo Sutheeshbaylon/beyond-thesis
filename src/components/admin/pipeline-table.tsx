@@ -48,10 +48,11 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-export default function PipelineTable({ projects, pendingPaymentProjectIds = [] }: { projects: Project[], pendingPaymentProjectIds?: string[] }) {
+export default function PipelineTable({ projects, pendingPaymentProjectIds = [], pendingDeliverableProjectIds = [] }: { projects: Project[], pendingPaymentProjectIds?: string[], pendingDeliverableProjectIds?: string[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const paymentPending = searchParams.get('payment') === 'pending'
+  const deliverablePending = searchParams.get('deliverable') === 'pending'
 
   const [search, setSearch] = useState('')
   const [filterStage, setFilterStage] = useState('all')
@@ -65,6 +66,9 @@ export default function PipelineTable({ projects, pendingPaymentProjectIds = [] 
 
     if (paymentPending && pendingPaymentProjectIds.length > 0) {
       rows = rows.filter((p) => pendingPaymentProjectIds.includes(p.id))
+    }
+    if (deliverablePending && pendingDeliverableProjectIds.length > 0) {
+      rows = rows.filter((p) => pendingDeliverableProjectIds.includes(p.id))
     }
     if (search.trim()) {
       const q = search.toLowerCase()
@@ -99,6 +103,13 @@ export default function PipelineTable({ projects, pendingPaymentProjectIds = [] 
       {paymentPending && (
         <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-[#B07000]">
           <span>Showing {pendingPaymentProjectIds.length} project{pendingPaymentProjectIds.length !== 1 ? 's' : ''} with payments awaiting verification</span>
+          <button onClick={() => router.push('/admin')} className="text-xs underline ml-4 whitespace-nowrap">Clear filter</button>
+        </div>
+      )}
+      {/* Deliverable pending banner */}
+      {deliverablePending && (
+        <div className="flex items-center justify-between mb-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-[#B07000]">
+          <span>Showing {pendingDeliverableProjectIds.length} project{pendingDeliverableProjectIds.length !== 1 ? 's' : ''} with deliverables awaiting approval</span>
           <button onClick={() => router.push('/admin')} className="text-xs underline ml-4 whitespace-nowrap">Clear filter</button>
         </div>
       )}
