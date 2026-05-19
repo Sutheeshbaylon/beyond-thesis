@@ -356,7 +356,7 @@ export default function HomePage() {
             </div>
             <div className="flex flex-col gap-3 text-sm text-teal-300">
               <a href="mailto:drshorafbaylon@gmail.com" className="hover:text-white transition-colors">📧 drshorafbaylon@gmail.com</a>
-              <Link href="/" className="hover:text-white transition-colors">🔐 Client portal login</Link>
+              <Link href="/login" className="hover:text-white transition-colors">🔐 Client portal login</Link>
               <a href="#quote" className="hover:text-white transition-colors">💬 Get a free quote</a>
             </div>
           </div>

@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL('/?redirected=1', request.url))
+    return NextResponse.redirect(new URL('/login?redirected=1', request.url))
   }
 
   const { data: profile } = await supabase
@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
     .single()
 
   if (!profile || !profile.is_active) {
-    return NextResponse.redirect(new URL('/?error=disabled', request.url))
+    return NextResponse.redirect(new URL('/login?error=disabled', request.url))
   }
 
   const role = profile.role as string
