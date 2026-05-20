@@ -47,3 +47,18 @@ export async function signOut() {
   await supabase.auth.signOut()
   redirect('/home')
 }
+
+export async function sendPasswordResetEmail(formData: FormData): Promise<{ error?: string; success?: boolean }> {
+  const email = formData.get('email') as string
+  if (!email) return { error: 'Email is required.' }
+
+  const supabase = await createClient()
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://beyondthesis.in'
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${appUrl}/reset-password`,
+  })
+
+  if (error) return { error: error.message }
+  return { success: true }
+}

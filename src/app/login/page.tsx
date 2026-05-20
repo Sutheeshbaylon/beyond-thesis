@@ -1,4 +1,5 @@
 import { signIn } from '@/app/actions/auth'
+import PasswordInput from '@/components/password-input'
 
 interface Props {
   searchParams: Promise<{ error?: string; redirected?: string }>
@@ -68,14 +69,11 @@ export default async function LoginPage({ searchParams }: Props) {
               >
                 Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
                 name="password"
-                type="password"
                 required
                 autoComplete="current-password"
-                className="w-full px-3 py-2 border border-[#E5E5E5] rounded-md text-sm text-[#1A1A1A] bg-white placeholder:text-[#666666] focus:outline-none focus:ring-2 focus:ring-[#1A3A5C] focus:border-transparent"
-                placeholder="••••••••"
               />
             </div>
 
@@ -89,7 +87,7 @@ export default async function LoginPage({ searchParams }: Props) {
 
           <div className="mt-4 text-center">
             <a
-              href="mailto:support@beyondthesis.in"
+              href="/forgot-password"
               className="text-sm text-[#1A3A5C] hover:underline"
             >
               Forgot password?

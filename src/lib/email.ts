@@ -35,12 +35,12 @@ export async function sendWelcomeEmail({
 
   <div style="background: #F8F8F7; border: 1px solid #E5E5E5; border-radius: 8px; padding: 20px; margin: 24px 0;">
     <p style="margin: 0 0 8px; font-size: 13px; color: #666666;">Your login details</p>
-    <p style="margin: 0 0 4px; font-size: 14px;"><strong>Portal:</strong> <a href="${APP_URL}" style="color: #1A3A5C;">${APP_URL}</a></p>
+    <p style="margin: 0 0 4px; font-size: 14px;"><strong>Portal:</strong> <a href="${APP_URL}/login" style="color: #1A3A5C;">${APP_URL}/login</a></p>
     <p style="margin: 0 0 4px; font-size: 14px;"><strong>Email:</strong> ${to}</p>
     <p style="margin: 0; font-size: 14px;"><strong>Password:</strong> <code style="background: #E5E5E5; padding: 2px 6px; border-radius: 4px;">${tempPassword}</code></p>
   </div>
 
-  <p style="font-size: 13px; color: #666666;">Please change your password after your first login. If you have any questions, reply to this email.</p>
+  <p style="font-size: 13px; color: #666666;">For security, please change your password after your first login — you can do this from the portal header. If you have any questions, reply to this email.</p>
 
   <hr style="border: none; border-top: 1px solid #E5E5E5; margin: 24px 0;" />
   <p style="font-size: 12px; color: #666666; margin: 0;">Beyond Research Unit · Thesis Support Services</p>

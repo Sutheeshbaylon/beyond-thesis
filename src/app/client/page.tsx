@@ -372,6 +372,9 @@ function ClientHeader({ name }: { name: string }) {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-[#666666] hidden sm:block">{name}</span>
+          <a href="/change-password" className="text-sm text-[#1A3A5C] hover:underline hidden sm:block">
+            Change password
+          </a>
           <form action={signOut}>
             <button type="submit" className="text-sm text-[#1A3A5C] hover:underline">Sign out</button>
           </form>
