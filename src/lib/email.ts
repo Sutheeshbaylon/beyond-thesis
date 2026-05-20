@@ -40,7 +40,7 @@ export async function sendWelcomeEmail({
     <p style="margin: 0; font-size: 14px;"><strong>Password:</strong> <code style="background: #E5E5E5; padding: 2px 6px; border-radius: 4px;">${tempPassword}</code></p>
   </div>
 
-  <p style="font-size: 13px; color: #666666;">For security, please change your password after your first login — you can do this from the portal header. If you have any questions, reply to this email.</p>
+  <p style="font-size: 13px; color: #666666;">If you have any questions, reply to this email.</p>
 
   <hr style="border: none; border-top: 1px solid #E5E5E5; margin: 24px 0;" />
   <p style="font-size: 12px; color: #666666; margin: 0;">Beyond Research Unit · Thesis Support Services</p>
