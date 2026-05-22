@@ -64,7 +64,7 @@ export async function sendPasswordResetEmail(formData: FormData): Promise<{ erro
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://beyondthesis.in'
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${appUrl}/auth/callback?next=/reset-password`,
+    redirectTo: `${appUrl}/auth/callback`,
   })
 
   if (error) return { error: error.message }
