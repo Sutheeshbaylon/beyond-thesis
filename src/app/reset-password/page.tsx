@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import PasswordInput from '@/components/password-input'
@@ -8,26 +8,12 @@ import PasswordInput from '@/components/password-input'
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [ready, setReady] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(searchParams.get('error') === 'expired'
+    ? 'This reset link has expired or already been used. Please request a new one.'
+    : ''
+  )
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
-
-  useEffect(() => {
-    const code = searchParams.get('code')
-    if (!code) {
-      setError('Invalid or expired reset link. Please request a new one.')
-      return
-    }
-    const supabase = createClient()
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        setError('This reset link has expired or already been used. Please request a new one.')
-      } else {
-        setReady(true)
-      }
-    })
-  }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -66,10 +52,6 @@ function ResetPasswordForm() {
     </div>
   )
 
-  if (!ready && !error) return (
-    <p className="text-sm text-[#666666] text-center">Verifying reset link…</p>
-  )
-
   if (error) return (
     <div className="space-y-4">
       <div className="px-3 py-2 bg-red-50 border border-red-200 rounded text-sm text-[#9B1C1C]">
@@ -97,12 +79,6 @@ function ResetPasswordForm() {
           </label>
           <PasswordInput id="confirm" name="confirm" required autoComplete="new-password" />
         </div>
-
-        {error && (
-          <div className="px-3 py-2 bg-red-50 border border-red-200 rounded text-sm text-[#9B1C1C]">
-            {error}
-          </div>
-        )}
 
         <button
           type="submit"
