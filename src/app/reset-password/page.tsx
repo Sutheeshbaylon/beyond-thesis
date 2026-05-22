@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { updatePassword } from '@/app/actions/auth'
 import PasswordInput from '@/components/password-input'
 
 function ResetPasswordForm() {
@@ -34,11 +34,10 @@ function ResetPasswordForm() {
       return
     }
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.updateUser({ password })
+    const result = await updatePassword(formData)
     setLoading(false)
-    if (error) {
-      setError(error.message)
+    if (result?.error) {
+      setError(result.error)
     } else {
       setDone(true)
       setTimeout(() => router.push('/login'), 2500)

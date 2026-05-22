@@ -48,6 +48,14 @@ export async function signOut() {
   redirect('/home')
 }
 
+export async function updatePassword(formData: FormData): Promise<{ error?: string }> {
+  const password = formData.get('password') as string
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) return { error: error.message }
+  return {}
+}
+
 export async function sendPasswordResetEmail(formData: FormData): Promise<{ error?: string; success?: boolean }> {
   const email = formData.get('email') as string
   if (!email) return { error: 'Email is required.' }
